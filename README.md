@@ -56,3 +56,10 @@ On launch the app shows an animated intro (the book logo draws itself, then the 
 tagline fade in, about 2.4 seconds), checks that the store is reachable, then opens it.
 No connection → a Retry button appears instead. To change it, edit `www/index.html`
 (text, colors at the top of the `<style>`, `MIN_SPLASH_MS` for the duration).
+
+## App icon
+
+The launcher icon is generated from `assets/icon-only.png`, `assets/icon-foreground.png` and
+`assets/icon-background.png` (1024×1024) during the build. Replace those files with your own
+artwork to change it. For a local build, run
+`npx @capacitor/assets generate --android` after `npx cap add android`.

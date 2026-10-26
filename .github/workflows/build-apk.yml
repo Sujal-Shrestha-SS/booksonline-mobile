@@ -29,6 +29,7 @@ jobs:
         run: |
           node scripts/prepare.mjs
           npx cap add android
+          npx @capacitor/assets generate --android --iconBackgroundColor '#1b5e3b' --iconBackgroundColorDark '#1b5e3b'
           npx cap sync android
 
       - name: Match the Android launch screen to the splash (no Capacitor logo flash)
