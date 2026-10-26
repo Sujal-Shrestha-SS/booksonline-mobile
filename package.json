@@ -1,11 +1,12 @@
 {
-  "name": "inkwell-mobile",
+  "name": "booksonline-android",
   "version": "1.0.0",
   "private": true,
-  "description": "Android app wrapper for the Inkwell & Co. bookstore (loads the hosted website)",
+  "description": "Android app wrapper for the BooksOnline bookstore (loads the hosted website)",
   "scripts": {
-    "add:android": "cap add android",
-    "sync": "cap sync android",
+    "prepare:app": "node scripts/prepare.mjs",
+    "add:android": "node scripts/prepare.mjs && cap add android",
+    "sync": "node scripts/prepare.mjs && cap sync android",
     "open": "cap open android"
   },
   "dependencies": {

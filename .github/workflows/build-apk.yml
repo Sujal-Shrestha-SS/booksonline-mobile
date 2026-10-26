@@ -8,6 +8,8 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      APP_URL: ${{ vars.APP_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,16 +26,26 @@ jobs:
         run: npm install
 
       - name: Create Android project
-        env:
-          APP_URL: ${{ vars.APP_URL }}
         run: |
+          node scripts/prepare.mjs
           npx cap add android
           npx cap sync android
+
+      - name: Match the Android launch screen to the splash (no Capacitor logo flash)
+        run: |
+          cat > android/app/src/main/res/values/splash_colors.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="splash_bg">#1b5e3b</color>
+          </resources>
+          XML
+          sed -i 's#@drawable/splash#@color/splash_bg#g' android/app/src/main/res/values/styles.xml
+          grep -n "splash" android/app/src/main/res/values/styles.xml || true
 
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
 
       - uses: actions/upload-artifact@v4
         with:
-          name: inkwell-books-apk
+          name: booksonline-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk

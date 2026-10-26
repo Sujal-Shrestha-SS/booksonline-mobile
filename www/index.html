@@ -3,20 +3,98 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Inkwell Books</title>
+  <meta name="theme-color" content="#1b5e3b" />
+  <title>BooksOnline</title>
   <style>
-    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-      font-family:system-ui,sans-serif;background:#faf7f2;color:#2b2b2b;text-align:center;padding:24px}
-    h1{font-size:1.3rem;margin:0 0 8px} p{margin:0 0 20px;color:#666}
-    button{font-size:1rem;padding:12px 28px;border:0;border-radius:10px;background:#2b2b2b;color:#fff}
-    @media (prefers-color-scheme:dark){body{background:#161616;color:#eee}p{color:#aaa}button{background:#eee;color:#111}}
+    :root { --bg:#1b5e3b; --fg:#ffffff; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; height:100%; background:var(--bg); color:var(--fg);
+      font-family: Georgia, "Times New Roman", serif; overflow:hidden; }
+    .stage { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:24px; text-align:center; }
+
+    /* Logo: the book icon draws itself, then gently pops */
+    .logo { width:96px; height:96px; fill:none; stroke:var(--fg); stroke-width:1.6;
+      stroke-linecap:round; stroke-linejoin:round; }
+    .logo path { stroke-dasharray:100; stroke-dashoffset:100; animation:draw 1.1s ease-out .15s forwards; }
+    .logo-wrap { animation:pop .5s ease-out 1.15s both; }
+
+    .name { font-size:2rem; letter-spacing:.04em; margin:0; opacity:0; transform:translateY(10px);
+      animation:rise .6s ease-out .9s forwards; }
+    .tag { font-size:.95rem; margin:0; opacity:0; font-style:italic;
+      animation:fade .6s ease-out 1.4s forwards; color:rgba(255,255,255,.8); }
+
+    .dots { position:absolute; bottom:max(40px, env(safe-area-inset-bottom)); display:flex; gap:8px; opacity:0;
+      animation:fade .4s ease-out 1.6s forwards; }
+    .dots i { width:8px; height:8px; border-radius:50%; background:var(--fg); opacity:.4; animation:blink 1s infinite; }
+    .dots i:nth-child(2){ animation-delay:.2s } .dots i:nth-child(3){ animation-delay:.4s }
+
+    .error { display:none; }
+    .error p { margin:0 0 18px; color:rgba(255,255,255,.85); font-family:system-ui,sans-serif; }
+    .error button { font-size:1rem; padding:12px 30px; border:0; border-radius:10px; background:#fff; color:var(--bg); font-weight:600; }
+    body.failed .dots { display:none; }
+    body.failed .error { display:block; }
+    body.leaving .stage { opacity:0; transition:opacity .35s ease; }
+
+    @keyframes draw { to { stroke-dashoffset:0 } }
+    @keyframes pop  { 0%{transform:scale(1)} 50%{transform:scale(1.12)} 100%{transform:scale(1)} }
+    @keyframes rise { to { opacity:1; transform:none } }
+    @keyframes fade { to { opacity:1 } }
+    @keyframes blink{ 0%,100%{opacity:.25} 50%{opacity:1} }
+    @media (prefers-reduced-motion:reduce){ *{ animation-duration:.01s !important; animation-delay:0s !important } }
   </style>
 </head>
 <body>
-  <div>
-    <h1>Can’t reach the store</h1>
-    <p>Check your internet connection and try again.</p>
-    <button onclick="location.reload()">Retry</button>
+  <div class="stage">
+    <div class="logo-wrap">
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path pathLength="100" d="M12 7v14" />
+        <path pathLength="100" d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+      </svg>
+    </div>
+    <h1 class="name">BooksOnline</h1>
+    <p class="tag">A library for every doorstep.</p>
+    <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="error">
+      <p>Can’t reach the store.<br />Check your internet connection.</p>
+      <button id="retry">Retry</button>
+    </div>
   </div>
+
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      var MIN_SPLASH_MS = 2400;   // how long the animation is shown at least
+      var CHECK_TIMEOUT_MS = 8000;
+      var started = Date.now();
+
+      function reachable() {
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, CHECK_TIMEOUT_MS);
+        // no-cors: we only care that the server answers, not what it says
+        return fetch(window.APP_URL, { mode: "no-cors", cache: "no-store", signal: ctrl.signal })
+          .then(function () { clearTimeout(timer); return true; })
+          .catch(function () { clearTimeout(timer); return false; });
+      }
+
+      function go() {
+        document.body.classList.remove("failed");
+        started = Date.now();
+        reachable().then(function (ok) {
+          var wait = Math.max(0, MIN_SPLASH_MS - (Date.now() - started));
+          setTimeout(function () {
+            if (!ok) { document.body.classList.add("failed"); return; }
+            document.body.classList.add("leaving");
+            setTimeout(function () { location.replace(window.APP_URL); }, 350);
+          }, wait);
+        });
+      }
+
+      document.getElementById("retry").addEventListener("click", function () {
+        document.body.classList.remove("leaving");
+        go();
+      });
+      go();
+    })();
+  </script>
 </body>
 </html>

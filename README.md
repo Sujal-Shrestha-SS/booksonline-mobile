@@ -1,4 +1,4 @@
-# Inkwell Books: Android app
+# BooksOnline: Android app
 
 This app is a thin shell around your **hosted** bookstore website, so it has every
 feature the site has (shop, cart, checkout, eSewa, account, admin) and updates
@@ -25,7 +25,7 @@ Open the https URL on your phone's browser first. If the site works there, the a
 2. Repo → **Settings → Secrets and variables → Actions → Variables → New variable**
    - Name: `APP_URL`   Value: `https://your-site` (no trailing slash)
 3. Repo → **Actions → Build Android APK → Run workflow**.
-4. When it finishes (~5 min), open the run and download the **inkwell-books-apk** artifact.
+4. When it finishes (~5 min), open the run and download the **booksonline-apk** artifact.
 5. Unzip, send `app-debug.apk` to your phone (WhatsApp, Drive, email), tap it, and allow
    "Install unknown apps" when asked. It now runs standalone.
 
@@ -33,8 +33,10 @@ Open the https URL on your phone's browser first. If the site works there, the a
 
 ```bash
 npm install
+export APP_URL=https://your-site
+node scripts/prepare.mjs
 npx cap add android
-APP_URL=https://your-site npx cap sync android
+npx cap sync android
 npx cap open android      # then Build → Build APK(s)
 ```
 
@@ -47,3 +49,10 @@ npx cap open android      # then Build → Build APK(s)
 - Icons/splash use Capacitor defaults. Put a 1024×1024 `assets/icon.png` and run
   `npx @capacitor/assets generate --android` to brand them.
 - Android back button navigates back within the site, and exits at the first page.
+
+## Splash screen
+
+On launch the app shows an animated intro (the book logo draws itself, then the name and
+tagline fade in, about 2.4 seconds), checks that the store is reachable, then opens it.
+No connection → a Retry button appears instead. To change it, edit `www/index.html`
+(text, colors at the top of the `<style>`, `MIN_SPLASH_MS` for the duration).
